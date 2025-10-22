@@ -1,0 +1,9 @@
+server:
+  port: 8080
+  host: "localhost"
+dog:
+  connString: "postgres"
+cat:
+  connString: "rmq"
+maxOffenders: 200
+closeTimeout: 10
