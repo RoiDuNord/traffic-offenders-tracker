@@ -15,8 +15,8 @@ func validate(cfg Config) error {
 	if cfg.Cat.ConnString == "" {
 		return fmt.Errorf("cat connString cannot be empty")
 	}
-	if cfg.MaxOffenders <= 0 {
-		return fmt.Errorf("maxOffenders must be > 0")
+	if cfg.MaxOffenders < 0 {
+		return fmt.Errorf("maxOffenders must be 0 or positive")
 	}
 	if cfg.CloseTimeout < 0 {
 		return fmt.Errorf("closeTimeout cannot be negative")

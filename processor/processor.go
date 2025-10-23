@@ -61,7 +61,7 @@ func New(ctx context.Context, db DB, broker Broker, maxOffenders, closeTimeout i
 }
 
 func (p *Processor) Run() error {
-	chMes, err := p.broker.Subscribe()
+	messagesChan, err := p.broker.Subscribe()
 	if err != nil {
 		return err
 	}
@@ -70,7 +70,7 @@ func (p *Processor) Run() error {
 	p.wp.Create()
 
 	go func() {
-		for msg := range chMes {
+		for msg := range messagesChan {
 			p.wp.Handle(msg, p.cancel)
 		}
 		// если брокер закрыл канал, то закрываем обработку
@@ -84,7 +84,7 @@ func (p *Processor) Run() error {
 				continue
 			}
 			if p.offendersHandled >= p.maxOffenders {
-				slog.Info("max offenders reached, program will close.")
+				slog.Info("Max offenders reached, program will close.")
 				p.cancel()
 			}
 		}
@@ -94,10 +94,10 @@ func (p *Processor) Run() error {
 
 	go func() {
 		<-p.ctx.Done()
-		slog.Info(fmt.Sprintf("context done %s", p.ctx.Err().Error()))
+		slog.Info(fmt.Sprintf("Context done %s", p.ctx.Err().Error()))
 		p.broker.Close()
 
-		slog.Info("wait for worker pool ended: 10s timeout")
+		slog.Info("Wait for worker pool ended: 10s timeout")
 		closeCtx, cancel := context.WithTimeout(context.Background(), time.Second*time.Duration(p.closeTimeout))
 		defer cancel()
 		p.wp.Wait(closeCtx)

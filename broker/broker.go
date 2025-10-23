@@ -22,11 +22,11 @@ func New(broker Broker) *BrokerService {
 }
 
 func (bm *BrokerService) Subscribe() (BrokerChan, error) {
-	ch, err := bm.broker.Subscribe()
+	messagesChan, err := bm.broker.Subscribe()
 	if err != nil {
 		return nil, fmt.Errorf("BrokerService: subscribe error: %w", err)
 	}
-	return ch, nil
+	return messagesChan, nil
 }
 
 func (bm *BrokerService) Close() error {

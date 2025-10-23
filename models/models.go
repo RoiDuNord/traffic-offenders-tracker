@@ -10,9 +10,10 @@ type Passage struct {
 	LicenseNum string   `json:"licenseNumber"`
 
 	Speeds  []float64      `json:"speeds"`
-	Classes []VehicleClass `json:"classes"` // а почему не статичный класс или помехи могут по-разному его определять?
+	Classes []VehicleClass `json:"classes"`
 	Sides   []VehicleSide  `json:"sides"`
 }
+// не статичный класс ТС из-за помех? Мол, класс ТС может по-разному определяться на разных участках?
 
 type TPoint struct {
 	X float64 `json:"x"`
@@ -43,9 +44,9 @@ type Offender struct {
 }
 
 type FatalError struct {
-	Reason string
+	Cause string
 }
 
 func (f *FatalError) Error() string {
-	return fmt.Sprintf("fatal error: %s", f.Reason)
+	return fmt.Sprintf("fatal error: %s", f.Cause)
 }

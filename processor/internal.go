@@ -8,10 +8,9 @@ import (
 )
 
 func (p *Processor) processMessage(workerID int, msg Message) error {
-	// В случае проблем на нашей стороне сообщаем брокеру, что сообщение не потреблено
 	msgAcked := true
 	defer func() {
-		slog.Info(fmt.Sprintf("msg ack: %v", msgAcked))
+		slog.Info(fmt.Sprintf("Msg ack: %v", msgAcked))
 		if msgAcked {
 			msg.Ack()
 		}
@@ -23,34 +22,33 @@ func (p *Processor) processMessage(workerID int, msg Message) error {
 	}
 	defer slog.Info("Processed passage", "worker", workerID, "GRN", passage.LicenseNum)
 
-	offender, ok := isViolationsDetected(passage)
+	offender, ok := isOffenseDetected(passage)
 	if !ok {
 		return nil
 	}
 
-	driverInfo := fmt.Sprintf("driver_%s", offender.GRN)
-	id, err := p.db.InsertMessage(driverInfo, []byte(offender.GRN))
+	id, err := p.db.InsertMessage(offender.GRN, msg.Bytes())
 	if err != nil {
 		msgAcked = false
-		return &models.FatalError{Reason: err.Error()}
+		return &models.FatalError{Cause: err.Error()}
 	}
 
 	p.offendersChan <- struct{}{}
 
-	slog.Info("Violation detected", "license", offender.GRN, "db id", id)
+	slog.Info("Offense detected", "GRN", offender.GRN, "db id", id)
 	return nil
 }
 
-func isViolationsDetected(passage models.Passage) (models.Offender, bool) {
+func isOffenseDetected(passage models.Passage) (models.Offender, bool) {
 	if len(passage.Track) == 0 {
-		slog.Error("zero track len")
+		slog.Error("Zero track len")
 		return models.Offender{}, false
 	}
 
 	maxTimeStamp := passage.Track[0].T
-	for _, point := range passage.Track[1:] {
-		if point.T > maxTimeStamp {
-			maxTimeStamp = point.T
+	for _, fixationPoint := range passage.Track[1:] {
+		if fixationPoint.T > maxTimeStamp {
+			maxTimeStamp = fixationPoint.T
 		}
 	}
 

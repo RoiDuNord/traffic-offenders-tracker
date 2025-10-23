@@ -18,13 +18,13 @@ import (
 func MustRun() error {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	defer slog.Info("tracker closed")
+	defer slog.Info("Tracker closed")
 
 	cfg, err := config.MustLoad()
 	if err != nil {
 		return fmt.Errorf("config load failed: %w", err)
 	}
-	slog.Info("config loaded", "host", cfg.Server.Host, "port", cfg.Server.Port)
+	slog.Info("Config loaded", "host", cfg.Server.Host, "port", cfg.Server.Port)
 
 	dog := dog.New()
 	if err := dog.Connect(cfg.Dog.ConnString); err != nil {
@@ -32,9 +32,9 @@ func MustRun() error {
 	}
 	defer func() {
 		dog.Close()
-		slog.Info("dog closed")
+		slog.Info("Dog closed")
 	}()
-	slog.Info("DB dog connected")
+	slog.Info("DB Dog connected")
 	dbService := repo.New(dog)
 
 	cat := cat.New()
@@ -43,9 +43,9 @@ func MustRun() error {
 	}
 	defer func() {
 		cat.Close()
-		slog.Info("cat closed")
+		slog.Info("Cat closed")
 	}()
-	slog.Info("Broker cat connected")
+	slog.Info("Broker Cat connected")
 	brokerService := broker.New(cat)
 
 	processor := processor.New(ctx, dbService, brokerService, cfg.MaxOffenders, cfg.CloseTimeout)
